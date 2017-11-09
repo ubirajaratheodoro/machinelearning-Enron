@@ -910,17 +910,9 @@ clf_dt = DecisionTreeClassifier(random_state=42)
 test_classifier(clf_dt, my_dataset, features_list)
 print ""
 
-# K Means clustering classifier
-print "-------------------------------------------------------"
-print "> 3. Testing dataset with K Means clustering classifier:"
-print "-------------------------------------------------------"
-clf_kmeans = KMeans(n_clusters=2)
-test_classifier(clf_kmeans, my_dataset, features_list)
-print ""
-
 # KNeighborsClassifier
 print "---------------------------------------------"
-print "> 4. Testing dataset with KNeighborsClassifier"
+print "> 3. Testing dataset with KNeighborsClassifier"
 print "---------------------------------------------"
 clf_neigh = KNeighborsClassifier(n_neighbors=3)
 test_classifier(clf_neigh, my_dataset, features_list)
@@ -941,7 +933,7 @@ print ""
 # 
 # Os resultados obtidos usando o conjunto de testes são apresentados a seguir:
 
-# In[27]:
+# In[24]:
 
 ### Task 5: Tune your classifier to achieve better than .3 precision and recall 
 ### using our testing script. Check the tester.py script in the final project
@@ -1020,14 +1012,44 @@ print "> End at:", (time.strftime('%d/%m/%Y %H:%M:%S'))
 print ""
 
 
+# In[25]:
+
+# Relaciona as features selecionadas e seu grau de relevância
+
+kbest = tree_clf.best_estimator_.named_steps['select_features']
+
+features_array = np.array(features_list)
+features_array = np.delete(features_array, 0)
+indices = np.argsort(kbest.scores_)[::-1]
+k_features = kbest.get_support().sum()
+
+finalfeatures = []
+for i in range(k_features):
+    finalfeatures.append(features_array[indices[i]])
+
+finalfeatures = finalfeatures[::-1]
+scores = kbest.scores_[indices[range(k_features)]][::-1]
+
+print "> Features selecionadas e seu grau de importancia"
+for i in range(k_features):
+    print "- ", features_array[indices[i]], " : ", round(kbest.scores_[indices[i]],5)
+    
+plt.barh(range(k_features), scores, color="blue")
+plt.yticks(np.arange(0.4, k_features), finalfeatures)
+plt.title('Features selecionadas e seu grau de importancia')
+plt.show()
+
+
 # ## Conclusão:
 # 
 # Como não verificou-se melhorias significativas no score f1 por meio da aplicação dos melhores parâmetros encontrados (em relação aos resultados originais obtidos por meio dos parâmetros originais do classificador DecisionTree com todas as features), optou-se por exportar o classificador DecisionTree com seus parâmetros default.
 # 
 # Acredita-se que o motivo de ter-se obtido resultados melhores antes da afinação dos parâmetros do algoritmo selecionado (Decision Tree) seja em função de que, com exceção de total_payments e total_stock_value, todos os demais algoritmos foram transformados para seu percentual de representatividade. Desta forma, eliminou-se as diferenças naturais decorrentes do cargo hierárquico das pessoas analisadas (exemplo: o salário de um diretor é naturalmente superior ao salário de um supervisor).
 
-# In[28]:
+# In[26]:
 
+print "> Teste do classificador otimizado utilizando a função tester.py:"
+print ""
 print "> Start at:", (time.strftime('%d/%m/%Y %H:%M:%S'))
 print ""
 test_classifier(tree_clf.best_estimator_, my_dataset, features_list)
@@ -1054,7 +1076,7 @@ print ""
 # >   Accuracy: 0.80362	Precision: 0.35030	Recall: 0.32350	F1: 0.33637	F2: 0.32853
 # >	Total predictions: 13000	True positives:  647	False positives: 1200	False negatives: 1353	True negatives: 9800
 
-# In[26]:
+# In[27]:
 
 ### Task 6: Dump your classifier, dataset, and features_list so anyone can
 ### check your results. You do not need to change anything below, but make sure
